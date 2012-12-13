@@ -175,10 +175,10 @@ import net.pleiades.tasks.Task;
 //}
 
 public class TaskExecutor implements Executor, Runnable, MessageListener<Map<String, Task>> {
-    protected static ITopic TASKS = Hazelcast.getTopic(Config.tasksTopic);
-    protected static ITopic REQUESTS = Hazelcast.getTopic(Config.requestTopic);
-    protected static ITopic RESULTS = Hazelcast.getTopic(Config.resultsTopic);
-    protected static ITopic ERRORS = Hazelcast.getTopic(Config.errorTopic);
+    protected ITopic TASKS;
+    protected ITopic REQUESTS;
+    protected ITopic RESULTS;
+    protected ITopic ERRORS;
     
     protected State state;
     protected Task currentTask;
@@ -187,6 +187,11 @@ public class TaskExecutor implements Executor, Runnable, MessageListener<Map<Str
     protected String id;
 
     public TaskExecutor(Properties properties, String id) {
+        this.TASKS = Hazelcast.getTopic(Config.tasksTopic);
+        this.REQUESTS = Hazelcast.getTopic(Config.requestTopic);
+        this.RESULTS = Hazelcast.getTopic(Config.resultsTopic);
+        this.ERRORS = Hazelcast.getTopic(Config.errorTopic);
+        
         this.id = Hazelcast.getCluster().getLocalMember().getInetSocketAddress().toString() + "-" + id;
         this.state = IDLE;
         this.running = false;
@@ -196,7 +201,7 @@ public class TaskExecutor implements Executor, Runnable, MessageListener<Map<Str
     }
 
     @Override
-    public void requestNewTask() {
+    public synchronized void requestNewTask() {
         state(REQUESTING);
         
         REQUESTS.publish(id);
@@ -239,6 +244,10 @@ public class TaskExecutor implements Executor, Runnable, MessageListener<Map<Str
                 currentTask = message.getMessageObject().get(id);
                 System.out.println("|| " + id + " got " + currentTask.getId());
                 state(JOB_RECEIVED);
+            }
+        } else {
+            if (isState(REQUEST_SENT)) {
+                state(IDLE);
             }
         }
     }

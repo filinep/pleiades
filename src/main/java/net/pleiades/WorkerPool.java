@@ -135,7 +135,7 @@ public class WorkerPool {
         public TaskDistributor(Lock lock) {
             this.lock = lock;
             this.isAlive = false;
-            heartBeatTopic = Hazelcast.getTopic(Config.heartBeatTopic);
+            this.heartBeatTopic = Hazelcast.getTopic(Config.heartBeatTopic);
             addListeners();
         }
 
