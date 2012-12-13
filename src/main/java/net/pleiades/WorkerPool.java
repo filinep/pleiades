@@ -17,7 +17,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import jline.ConsoleReader;
-import net.pleiades.simulations.selection.EqualProbabilitySelector;
 import net.pleiades.tasks.executor.TaskExecutor;
 
 public class WorkerPool {
@@ -39,7 +38,7 @@ public class WorkerPool {
             this.con = new ConsoleReader();
 
             for (int i = 0; i < count; i++) {
-                workers[i] = new TaskExecutor(p, new EqualProbabilitySelector(), String.valueOf(i));
+                workers[i] = new TaskExecutor(p, String.valueOf(i));
             }
 
             this.quiet = quiet;
